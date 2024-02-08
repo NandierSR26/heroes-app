@@ -6,6 +6,6 @@ import { Component } from '@angular/core';
   styles: [
   ]
 })
-export class LayotutPageComponent {
+export class LayoutPageComponent {
 
 }
