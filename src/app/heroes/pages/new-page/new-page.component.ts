@@ -1,7 +1,9 @@
 import { HeroesService } from './../../services/heroes.service';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { Hero, Publisher } from '../../interfaces/hero.interface';
+import { ActivatedRoute, Router } from '@angular/router';
+import { switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-new-page',
@@ -9,7 +11,7 @@ import { Hero, Publisher } from '../../interfaces/hero.interface';
   styles: [
   ]
 })
-export class NewPageComponent {
+export class NewPageComponent implements OnInit {
 
   public heroForm = new FormGroup({
     id: new FormControl<string>(''),
@@ -27,29 +29,49 @@ export class NewPageComponent {
   ]
 
   constructor(
-    private heroesService: HeroesService
-  ) {}
+    private heroesService: HeroesService,
+    private activatedRoute: ActivatedRoute,
+    private router: Router
+  ) { }
 
   get currentHero(): Hero {
     const hero = this.heroForm.value as Hero;
     return hero;
   }
 
+  ngOnInit(): void {
+
+    if (!this.router.url.includes('edit')) return;
+
+    this.activatedRoute.params
+      .pipe(
+        switchMap(({ id }) => this.heroesService.getHeroeById(id)),
+      ).subscribe(hero => {
+
+        if( !hero ) return this.router.navigateByUrl('/');
+
+        this.heroForm.reset( hero )
+        return;
+
+      });
+
+  }
+
   onSubmit(): void {
 
-    if( this.heroForm.invalid ) return;
+    if (this.heroForm.invalid) return;
 
-    if( this.currentHero.id ) {
-      this.heroesService.updateHero( this.currentHero )
-        .subscribe( hero => {
+    if (this.currentHero.id) {
+      this.heroesService.updateHero(this.currentHero)
+        .subscribe(hero => {
           // TODO: mostrar snackbars
         });
 
       return;
     }
 
-    this.heroesService.addHero( this.currentHero )
-      .subscribe( hero => {
+    this.heroesService.addHero(this.currentHero)
+      .subscribe(hero => {
         // TODO: mostrar snacbar y navegar a /heroes/edit/hero.id
       });
 
