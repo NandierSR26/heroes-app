@@ -1,6 +1,7 @@
+import { HeroesService } from './../../services/heroes.service';
 import { Component } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { Publisher } from '../../interfaces/hero.interface';
+import { Hero, Publisher } from '../../interfaces/hero.interface';
 
 @Component({
   selector: 'app-new-page',
@@ -25,11 +26,33 @@ export class NewPageComponent {
     { id: 'Marvel Comics', desc: 'Marvel - Comics' },
   ]
 
+  constructor(
+    private heroesService: HeroesService
+  ) {}
+
+  get currentHero(): Hero {
+    const hero = this.heroForm.value as Hero;
+    return hero;
+  }
+
   onSubmit(): void {
-    console.log({
-      formIsValid: this.heroForm.valid,
-      value: this.heroForm.value
-    })
+
+    if( this.heroForm.invalid ) return;
+
+    if( this.currentHero.id ) {
+      this.heroesService.updateHero( this.currentHero )
+        .subscribe( hero => {
+          // TODO: mostrar snackbars
+        });
+
+      return;
+    }
+
+    this.heroesService.addHero( this.currentHero )
+      .subscribe( hero => {
+        // TODO: mostrar snacbar y navegar a /heroes/edit/hero.id
+      });
+
   }
 
 }
