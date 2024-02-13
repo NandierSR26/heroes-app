@@ -5,6 +5,8 @@ import { MatSnackBar } from '@angular/material/snack-bar'
 import { Hero, Publisher } from '../../interfaces/hero.interface';
 import { ActivatedRoute, Router } from '@angular/router';
 import { switchMap } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-new-page',
@@ -33,7 +35,8 @@ export class NewPageComponent implements OnInit {
     private heroesService: HeroesService,
     private activatedRoute: ActivatedRoute,
     private router: Router,
-    private snackbar: MatSnackBar
+    private snackbar: MatSnackBar,
+    private dialog: MatDialog
   ) { }
 
   get currentHero(): Hero {
@@ -50,9 +53,9 @@ export class NewPageComponent implements OnInit {
         switchMap(({ id }) => this.heroesService.getHeroeById(id)),
       ).subscribe(hero => {
 
-        if( !hero ) return this.router.navigateByUrl('/');
+        if (!hero) return this.router.navigateByUrl('/');
 
-        this.heroForm.reset( hero )
+        this.heroForm.reset(hero)
         return;
 
       });
@@ -66,7 +69,7 @@ export class NewPageComponent implements OnInit {
     if (this.currentHero.id) {
       this.heroesService.updateHero(this.currentHero)
         .subscribe(hero => {
-          this.showSnackbar(`${ hero.superhero } actualizado`);
+          this.showSnackbar(`${hero.superhero} actualizado`);
 
         });
 
@@ -76,17 +79,36 @@ export class NewPageComponent implements OnInit {
     this.heroesService.addHero(this.currentHero)
       .subscribe(hero => {
         this.router.navigate(['/heroes/edit', hero.id])
-        this.showSnackbar(`${ hero.superhero } creado`);
+        this.showSnackbar(`${hero.superhero} creado`);
 
       });
 
   }
 
-  showSnackbar( message: string ): void {
+  onDeleterHero(): void {
+    if (!this.currentHero.id) throw Error('Heri Id is reguired');
 
-    this.snackbar.open( message, 'Cerrar', {
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: this.heroForm.value
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if ( !result ) return;
+      
+      this.heroesService.deleteHeroById( this.currentHero.id );
+      this.router.navigate(['/heroes'])
+    });;
+
+
+
+  }
+
+  showSnackbar(message: string): void {
+
+    this.snackbar.open(message, 'Cerrar', {
       duration: 2500
-    } )
+    })
 
   }
 

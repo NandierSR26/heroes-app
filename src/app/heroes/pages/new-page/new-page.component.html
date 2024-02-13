@@ -82,7 +82,7 @@
           </button>
           <span></span>
   
-          <button mat-flat-button color="warn" *ngIf="currentHero.id">
+          <button mat-flat-button color="warn" *ngIf="currentHero.id" (click)="onDeleterHero()">
             Borrar
           </button>
         </div>
